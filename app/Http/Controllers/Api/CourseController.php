@@ -10,6 +10,7 @@ use App\Http\Requests\CourseStoreRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
+
 class CourseController extends Controller
 {
 
@@ -22,17 +23,30 @@ class CourseController extends Controller
     public function index(): JsonResponse
     {
 
-        $courses = Course::with('instructor')
-            ->paginate(15);
+        $courses = $this->getOptimizedCourses();
+
+        return response()->json(
+            ['courses' => $courses,'instructors' => $this->getOptimizedInstructors()],
+            200,
+            [
+                'Cache-Control' => 'public, max-age=60',
+                'ETag' => md5(json_encode($courses))
+            ]
+        );
+    }
+    protected function getOptimizedCourses()
+    {
+
+        return Cache::remember('all_courses_list', 60, function () {
+            $courses = Course::with('instructor')
+                ->paginate(15);
 
 
-
-        $courses->getCollection()->transform(function ($course) {
-            $course->average_rating = $this->ratingService->getAverageRating($course);
-            return $course;
+            return $courses->getCollection()->transform(function ($course) {
+                $course->average_rating = $this->ratingService->getAverageRating($course);
+                return $course;
+            });;
         });
-
-        return response()->json($courses);
     }
 
     /**
@@ -41,7 +55,7 @@ class CourseController extends Controller
     protected function getOptimizedInstructors()
     {
         return Cache::remember('all_instructors_list', 3600, function () {
-            return Instructor::select('id', 'name','bio')
+            return Instructor::select('id', 'name', 'bio')
                 ->orderBy('name')
                 ->get();
         });
