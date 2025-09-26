@@ -18,4 +18,5 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('instructors', InstructorController::class)->only(['store', 'index']);
     Route::apiResource('courses', CourseController::class);
     Route::get('instructors/list', [CourseController::class, 'getInstructorsList']);
+    Route::post('courses/{course}/comments', [CommentController::class, 'store']);
 });
