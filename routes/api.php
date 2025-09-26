@@ -6,6 +6,7 @@ use \App\Http\Controllers\Api\InstructorController;
 use App\Http\Controllers\Api\AuthController;
 use \App\Http\Controllers\Api\CourseController;
 use \App\Http\Controllers\Api\CommentController;
+use \App\Http\Controllers\Api\LessonController;
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
@@ -16,7 +17,9 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     });
 
     Route::apiResource('instructors', InstructorController::class)->only(['store', 'index']);
+    Route::post('courses/{course}/comments', [CommentController::class, 'store']);
+    Route::apiResource('courses/{course}/lessons', LessonController::class);
     Route::apiResource('courses', CourseController::class);
     Route::get('instructors/list', [CourseController::class, 'getInstructorsList']);
-    Route::post('courses/{course}/comments', [CommentController::class, 'store']);
+
 });
