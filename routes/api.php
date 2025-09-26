@@ -21,5 +21,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::apiResource('courses/{course}/lessons', LessonController::class);
     Route::apiResource('courses', CourseController::class);
     Route::get('instructors/list', [CourseController::class, 'getInstructorsList']);
+    Route::post('courses/{course}/favorite', [CourseController::class, 'toggleFavorite']);
+    Route::get('favorites', [CourseController::class, 'indexFavorites']);
 
 });

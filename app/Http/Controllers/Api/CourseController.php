@@ -9,7 +9,7 @@ use App\Services\CourseRatingService;
 use App\Http\Requests\CourseStoreRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
-
+use Illuminate\Support\Facades\Auth;
 class CourseController extends Controller
 {
 
@@ -80,5 +80,34 @@ class CourseController extends Controller
     public function getInstructorsList(): JsonResponse
     {
         return response()->json($this->getOptimizedInstructors());
+    }
+    /**
+     * Toggles the favorite status for the authenticated user on a specific course.
+     * Attaches the user if they haven't favorited it, or detaches if they have.
+     */
+    public function toggleFavorite(Course $course): JsonResponse
+    {
+        $user = Auth::user();
+
+        // The toggle() method is ideal for Many-to-Many relationships.
+        // It inserts the pivot record if it doesn't exist, and deletes it if it does.
+        $toggled = $user->favorites()->toggle($course->id);
+
+        $status = empty($toggled['attached']) ? 'removed' : 'added';
+
+        return response()->json([
+            'status' => $status,
+            'message' => "Course has been successfully {$status} to favorites."
+        ], 200);
+    }
+
+    /**
+     * Retrieves all courses marked as favorite by the authenticated user.
+     */
+    public function indexFavorites(): JsonResponse
+    {
+        $favorites = Auth::user()->favorites()->with('instructor')->get();
+
+        return response()->json($favorites);
     }
 }
