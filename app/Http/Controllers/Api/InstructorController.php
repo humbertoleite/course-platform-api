@@ -17,7 +17,7 @@ class InstructorController extends Controller
     {
         // Cache for 60 minutes (3600 seconds) to reduce DB load for millions of records
         return Cache::remember('all_instructors_list', 3600, function () {
-            return Instructor::select('id', 'name')
+            return Instructor::select('id', 'name','bio')
                              ->orderBy('name')
                              ->get();
         });
